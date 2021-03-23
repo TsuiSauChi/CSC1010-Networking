@@ -5,5 +5,8 @@ pip3 install flask
 
 ## Steps to Run 
 
-export FLASK_APP=index.py
-flask run
+In terminal,
+
+1) export FLASK_APP=index.py
+
+2) flask run
