@@ -1,41 +1,53 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, redirect, request
+from login import ContactForm
+from dbcommunicate import db
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "123456789"
 
 class User:
-    def __init__(self):
-        self.nric = 99999
-        self.name = "james"
-        self.birth = "1/1/1998"
-        self.sex = "Male"
-        self.country = "Singapore"
-        self.nationality = "Singaporean"
+    def __init__(self, name):
+        print(name)
+        self.r = db.search(name)
     
     def getNRIC(self):
-        return self.nric 
+        return self.r['id']
 
     def getName(self):
-        return self.name
+        return self.r['name']
 
     def getDateofBirth(self):
-        return self.birth
-
-    def getSex(self):
-        return self.sex
-
-    def getCountryOfBirth(self):
-        return self.country
+        return self.r['dob']
 
     def getNationality(self):
-        return self.nationality
+        return self.r['nationality']
 
-@app.route('/')
-def getMain():
-    user = User()
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    form = ContactForm()
+    if request.method == "POST":
+        username = request.form['username']
+        password = request.form['password']
+        if db.checkpass(username, password) == True:
+            return redirect(url_for("identity", username = username))
+        else:
+            return redirect(url_for("error"))
+    else:
+        return render_template(
+            "contact.jinja2",
+            form=form
+        )
+
+@app.route('/identity')
+def identity():
+    user = User(request.args['username'])
     return render_template('index.html',
                         nric = user.getNRIC(),
                         name = user.getName(),
                         birth = user.getDateofBirth(),
-                        sex = user.getSex(),
-                        country = user.getCountryOfBirth(),
                         nationality = user.getNationality())
+
+@app.route('/error')
+def error():
+    return render_template('error.html')
+

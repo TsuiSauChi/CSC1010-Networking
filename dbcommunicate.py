@@ -17,7 +17,7 @@ class Database:
         """
         set up connection to the db file and create table if it does not exist
         """
-        self.con = sqlite3.connect('../../Desktop/AY20 21/Tri 2/CSC1010 Computer Networks/Project/users.db')  # Create connection to database file
+        self.con = sqlite3.connect('./database.db', check_same_thread=False)  # Create connection to database file
         self.con.row_factory = sqlite3.Row # Change row manager
 
         self.cur = self.con.cursor()  # Cursor for data selection
@@ -75,11 +75,14 @@ class Database:
         """
         self.cur.execute('''select pswd from users where name=:name''', {"name": name})
 
-        for p in self.cur.fetchone():
-            if p == pswd:
-                return True
-            else:
-                return False
+        if self.cur.fetchone():
+            for p in self.cur.fetchone():
+                if p == pswd:
+                    return True
+                else:
+                    return False
+        else:
+            return False
 
     def closedb(self):
         """
@@ -93,18 +96,19 @@ db = Database()
 # Registration of test acc, preferably should pass input of user from a web login page
 db.register("admin", "test", "S12345678A", "01-01-1998", "Singaporean")
 
+'''
 # Search with name of user
 r = db.search("admin")
 
-# Results
+# # Results
 print("Searching for user admin")
 print("Results:")
-for x in r:
-    print(x)
+print(r['name'])
 
 # Checking whether login should be success
-print("Correct password check: " + str(db.checkpass("admin", "test")))
-print("Incorrect password check: " + str(db.checkpass("admin", "kglakg")))
+# print("Correct password check: " + str(db.checkpass("admin", "test")))
+# print("Incorrect password check: " + str(db.checkpass("admin", "kglakg")))
 
 # Need to close at the end
-db.closedb()
+#db.closedb()
+'''

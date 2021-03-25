@@ -1,0 +1,27 @@
+{% block content %}
+    <div class = "form-wrapper">
+        <h2 class="title">Contact</h2>
+
+        <form method="POST" action="{{ url_for('login') }}">
+
+            <fieldset class="form field">
+                {{ form.username.label }}
+                {{ form.username }}
+                    {% if form.username.errors%}
+                        <li>{{ error }}</li>
+                    {% endif %}
+            </fieldset>
+
+            <fieldset class="form field">
+                {{ form.password.label }}
+                {{ form.password }}
+                    {% if form.password.errors%}
+                        <li>{{ error }}</li>
+                    {% endif %}
+            </fieldset>
+
+            {{ form.submit }}
+
+        </form>
+    </div>
+{% endblock %}
