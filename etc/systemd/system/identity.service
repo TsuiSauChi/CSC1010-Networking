@@ -1,0 +1,14 @@
+[Unit]
+Description=uWSGI instance to serve identity service
+After=network.target
+
+[Service]
+User=jamestsui
+Group=www-data
+# Need to change here accordingly 
+WorkingDirectory=/home/jamestsui/Desktop/identity
+Environment="PATH=/home/jamestsui/Desktop/identity/identityenv/bin"
+ExecStart=/home/jamestsui/Desktop/identity/identityenv/bin/uwsgi --ini identity.ini
+
+[Install]
+WantedBy=multi-user.target
