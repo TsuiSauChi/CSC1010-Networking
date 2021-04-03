@@ -20,8 +20,6 @@ try:
         print(f'connecting to {SERVER} port {serverPort}')
         clientSocket.connect((SERVER, serverPort))
 
-        #cmd = ""
-
         print("Welcome to the FTP client.")
         print("Please input one of the following commands to execute:")
         print("UPLD file_path : Upload file")
