@@ -1,6 +1,7 @@
 from flask import Flask, render_template, url_for, redirect, request
 from login import ContactForm
 from dbcommunicate import db
+import fileclient
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "123456789"
@@ -28,6 +29,7 @@ def login():
     if request.method == "POST":
         username = request.form['username']
         password = request.form['password']
+        fileclient.download() # TO RETRIEVE DB FILE
         if db.checkpass(username, password) == True:
             return redirect(url_for("identity", username = username))
         else:

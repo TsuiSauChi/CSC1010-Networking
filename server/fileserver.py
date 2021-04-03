@@ -17,29 +17,32 @@ class Threadchild(Thread):
         cmd = self.sock.recv(BUFFER_SIZE).decode()
 
         if "D" in str(cmd):
-            # Removes all the leading as well as trailing spaces
             self.download()
         elif "U" in str(cmd):
             self.upload()
 
-        return
-
     def download(self):
         f = open("database.db", 'rb')
-        while True:
+        l = f.read(BUFFER_SIZE)
+        # While not EOF
+        while l:
+            self.sock.send(l)
+            # print('Sent ',repr(l))
             l = f.read(BUFFER_SIZE)
-            # While not EOF
-            while (l):
-                self.sock.send(l)
-                # print('Sent ',repr(l))
-                l = f.read(BUFFER_SIZE)
-            if not l:
-                f.close()
-                self.sock.close()
-                break
+        f.close()
+        self.sock.close()
 
     def upload(self):
-        pass
+        f = open('database.db', 'wb')
+        while True:
+            l = self.sock.recv(BUFFER_SIZE)
+            while l:
+                print('receiving data...')
+                f.write(l)
+                l = self.sock.recv(BUFFER_SIZE)
+            f.close()
+            self.sock.close()
+            break
 
 
 # GET Ip address

@@ -2,45 +2,85 @@ import socket
 import sys
 import struct
 
-# GET IP address
-SERVER = socket.gethostbyname(socket.gethostname())
-serverPort = 10047
-
-# Step 1: Create a TCP/IP socket
-clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Step 2: Connect the socket to the port where the server is listening
-print(f'connecting to {SERVER} port {serverPort}')
-clientSocket.connect((SERVER, serverPort))
-
 def download():
-    # Run program
+
     try:
 
-            cmd = "D".encode()
-            print("Sending cmd", cmd)
-            clientSocket.send(cmd)
+        # GET IP address
+        SERVER = socket.gethostbyname(socket.gethostname())
+        serverPort = 10047
 
-            bufferSize = 2048
+        # Step 1: Create a TCP/IP socket
+        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-            with open('database.db', 'wb') as f:
-                print('file opened')
-                while True:
-                    print('receiving data...')
-                    data = clientSocket.recv(2048)
-                    print(f'data = {data}')
-                    if not data:
-                        f.close()
-                        print('file close()')
-                        break
-                    # write data to a file
-                    f.write(data)
+        # Step 2: Connect the socket to the port where the server is listening
+        print(f'connecting to {SERVER} port {serverPort}')
+        clientSocket.connect((SERVER, serverPort))
+
+        cmd = "D".encode()
+        print("Sending cmd", cmd)
+        clientSocket.send(cmd)
+
+        bufferSize = 2048
+
+        #reply = clientSocket.recv(bufferSize)
+
+        f = open('database.db', 'wb')
+        while True:
+            l = clientSocket.recv(bufferSize)
+            while l:
+                print('receiving data...')
+                f.write(l)
+                l = clientSocket.recv(bufferSize)
+            f.close()
+            print('file close()')
+            clientSocket.shutdown(socket.SHUT_WR)
+            clientSocket.close()
+            break
+
+    finally:
+
+        clientSocket.close()
+
+def upload():
+
+    try:
+
+        # GET IP address
+        SERVER = socket.gethostbyname(socket.gethostname())
+        serverPort = 10047
+
+        # Step 1: Create a TCP/IP socket
+        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # Step 2: Connect the socket to the port where the server is listening
+        print(f'connecting to {SERVER} port {serverPort}')
+        clientSocket.connect((SERVER, serverPort))
+
+        cmd = "U".encode()
+        print("Sending cmd", cmd)
+        clientSocket.send(cmd)
+
+        bufferSize = 2048
+
+        f = open("database.db", 'rb')
+        l = f.read(bufferSize)
+        # While not EOF
+        while l:
+            clientSocket.send(l)
+            # print('Sent ',repr(l))
+            l = f.read(bufferSize)
+        f.close()
+        clientSocket.shutdown(socket.SHUT_WR)
+        clientSocket.close()
 
     finally:
 
         clientSocket.close()
 
 download()
+
+#upload()
 
 # REFERENCE CODE
 '''
