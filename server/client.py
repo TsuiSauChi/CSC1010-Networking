@@ -3,24 +3,26 @@ from status import Status
 import sys
 import struct
 
-#GET IP address
-SERVER = socket.gethostbyname(socket.gethostname())
-serverPort = 10047
 
-# Step 1: Create a TCP/IP socket
-clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-status = Status()
-
-# Step 2: Connect the socket to the port where the server is listening
-print(f'connecting to {SERVER} port {serverPort}')
-clientSocket.connect((SERVER, serverPort))
 
 # Run program
 try:
 
-    cmd = ""
-
     while True:
+
+        # GET IP address
+        SERVER = socket.gethostbyname(socket.gethostname())
+        serverPort = 10047
+
+        # Step 1: Create a TCP/IP socket
+        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        status = Status()
+
+        # Step 2: Connect the socket to the port where the server is listening
+        print(f'connecting to {SERVER} port {serverPort}')
+        clientSocket.connect((SERVER, serverPort))
+
+        cmd = ""
 
         print("Welcome to the FTP client.")
         print("Please input one of the following commands to execute:")
@@ -44,7 +46,8 @@ try:
         if "QUIT" in cmd:
             break
 
-        # Step 3: To send message to server 
+        # Step 3: To send message to server
+        filename = str(cmd)[4:].strip()
         cmd = cmd.encode()
         print("Sending cmd", cmd)
         clientSocket.send(cmd)
@@ -59,18 +62,35 @@ try:
             status.setCode("250")
             status.setMessage("Requested file action okay, completed.")
             print(status.getCode(), status.getMessage())
-            with open('received_file', 'wb') as f:
-                print('file opened')
-                while True:
+            f = open(filename, 'wb')
+            while True:
+                l = clientSocket.recv(bufferSize)
+                while l:
+                    #if not l:
+                    #    f.close()
+                    #    print('file close()')
+                    #    break
                     print('receiving data...')
-                    data = clientSocket.recv(2048)
-                    print(f'data = {data}')
-                    if not data:
-                        f.close()
-                        print('file close()')
-                        break
-                    # write data to a file
-                    f.write(data)
+                    f.write(l)
+                    l = clientSocket.recv(bufferSize)
+                f.close()
+                print('file close()')
+                clientSocket.shutdown(socket.SHUT_WR)
+                clientSocket.close()
+                break
+
+            #with open('received_file', 'wb') as f:
+            #    print('file opened')
+            #    while True:
+            #        print('receiving data...')
+            #        data = clientSocket.recv(2048)
+            #        print(f'data = {data}')
+            #        if not data:
+            #            f.close()
+            #            print('file close()')
+            #            break
+            #        # write data to a file
+            #        f.write(data)
         #Listing files
         elif reply == '212':
             try:
@@ -88,7 +108,7 @@ try:
                 print("Couldn't retrieve listing")
 
 finally:
-    
+
     status.setCode("226")
     status.setMessage("Closing data connection. Request successful.")
     print(status.getCode(), status.getMessage())

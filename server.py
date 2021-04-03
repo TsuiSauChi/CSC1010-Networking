@@ -30,13 +30,17 @@ class Threadchild(Thread):
             self.listing()
             
         #elif "UPLD" in str(cmd):
+        #    self.upload(str(cmd)[4:].strip())
+
         elif "DWLD" in str(cmd):
             self.status.setCode("125")
             self.status.setMessage("Data connection already open; transfer starting.")
             self.sock.send(self.status.getCode().encode())
             # Removes all the leading as well as trailing spaces 
             self.download(str(cmd)[4:].strip())
+
         #elif "DELF" in str(cmd):
+
         elif "QUIT" in str(cmd):
             self.sock.close()
 
@@ -58,21 +62,29 @@ class Threadchild(Thread):
         #self.sock.recv(BUFFER_SIZE)
         print("Successfully sent file listing")
         return
-    
+
+
+    #def upload(self, filename):
+    #    f = open(filename, 'wb')
+    #
+    #    while True:
+
+
 
     def download(self, filename):
-        f = open(filename,'rb')
-        while True:
+        f = open(filename, 'rb')
+        l = f.read(BUFFER_SIZE)
+        # While not EOF
+        while l:
+            #if not l:
+            #    f.close()
+            #    self.sock.close()
+            #    break
+            self.sock.send(l)
+            #print('Sent ',repr(l))
             l = f.read(BUFFER_SIZE)
-            # While not EOF
-            while (l):
-                self.sock.send(l)
-                #print('Sent ',repr(l))
-                l = f.read(BUFFER_SIZE)
-            if not l:
-                f.close()
-                self.sock.close()
-                break
+        f.close()
+        self.sock.close()
 
 
 # GET Ip address
