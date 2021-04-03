@@ -108,6 +108,12 @@ try:
             f.close()
             clientSocket.close()
 
+        # Deleting files
+        elif reply == "313":
+            status.setCode("260")
+            status.setMessage("File deleted")
+            print(status.getCode(), status.getMessage())
+
 finally:
 
     status.setCode("226")

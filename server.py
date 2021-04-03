@@ -42,7 +42,8 @@ class Threadchild(Thread):
             # Removes all the leading as well as trailing spaces 
             self.download(str(cmd)[4:].strip())
 
-        #elif "DELF" in str(cmd):
+        elif "DELF" in str(cmd):
+            self.delete(str(cmd)[4:].strip())
 
         elif "QUIT" in str(cmd):
             self.sock.close()
@@ -93,6 +94,17 @@ class Threadchild(Thread):
         f.close()
         self.sock.close()
 
+    def delete(self, filename):
+        if os.path.isfile(filename):
+            print("File exist")
+            os.remove(filename)
+            self.status.setCode("313")
+            self.status.setMessage("File Deleted")
+            self.sock.send(self.status.getCode().encode())
+        else:
+            print("File not found")
+            send_data = "File cannot be found"
+            self.sock.send(send_data.encode())
 
 # GET Ip address
 SERVER = gethostbyname(gethostname())
