@@ -18,10 +18,13 @@ class Database:
         set up connection to the db file and create table if it does not exist
         """
         self.con = sqlite3.connect('database.db', check_same_thread=False)  # Create connection to database file
+    
         self.con.row_factory = sqlite3.Row # Change row manager
 
         self.cur = self.con.cursor()  # Cursor for data selection
 
+        # Check if table already exists
+        #self.cur.execute(''' select count(name) from sqlite_master where type='table' and name='users' ''')
         # Check if table already exists
         self.cur.execute(''' select count(name) from sqlite_master where type='table' and name='users' ''')
 
@@ -73,14 +76,10 @@ class Database:
         :return: boolean of whether password is correct
         :rtype: boolean
         """
+        print(name, pswd)
         self.cur.execute('''select pswd from users where name=:name''', {"name": name})
-
-        if self.cur.fetchone():
-            for p in self.cur.fetchone():
-                if p == pswd:
-                    return True
-                else:
-                    return False
+        if self.cur.fetchone()['pswd'] == pswd:
+            return True
         else:
             return False
 
@@ -91,10 +90,10 @@ class Database:
         self.con.close()
 
 ### Test functions ###
-db = Database()
+#db = Database()
 
 # Registration of test acc, preferably should pass input of user from a web login page
-db.register("admin", "test", "S12345678A", "01-01-1998", "Singaporean")
+#db.register("admin", "test", "S12345678A", "01-01-1998", "Singaporean")
 
 '''
 # Search with name of user
