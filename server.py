@@ -29,8 +29,11 @@ class Threadchild(Thread):
             self.sock.send(self.status.getCode().encode())
             self.listing()
             
-        #elif "UPLD" in str(cmd):
-        #    self.upload(str(cmd)[4:].strip())
+        elif "UPLD" in str(cmd):
+            self.status.setCode("126")
+            self.status.setMessage("Data connection already open; transfer starting.")
+            self.sock.send(self.status.getCode().encode())
+            self.upload(str(cmd)[4:].strip())
 
         elif "DWLD" in str(cmd):
             self.status.setCode("125")
@@ -64,11 +67,19 @@ class Threadchild(Thread):
         return
 
 
-    #def upload(self, filename):
-    #    f = open(filename, 'wb')
-    #
-    #    while True:
-
+    def upload(self, filename):
+        f = open(filename, 'wb')
+        while True:
+            l = self.sock.recv(BUFFER_SIZE)
+            while l:
+                print('receiving data...')
+                f.write(l)
+                l = self.sock.recv(BUFFER_SIZE)
+            f.close()
+            print('file close()')
+            #self.sock.shutdown(socket.SHUT_WR)
+            self.sock.close()
+            break
 
 
     def download(self, filename):
@@ -76,10 +87,6 @@ class Threadchild(Thread):
         l = f.read(BUFFER_SIZE)
         # While not EOF
         while l:
-            #if not l:
-            #    f.close()
-            #    self.sock.close()
-            #    break
             self.sock.send(l)
             #print('Sent ',repr(l))
             l = f.read(BUFFER_SIZE)
@@ -98,8 +105,7 @@ serverSocket.bind((SERVER, serverPort))
 threads = []
 
 while True:
-    print(threads)
-    # What is 5 here?
+    #print(threads)
     serverSocket.listen(5)
     print("Waiting for incoming connections...")
     # second para returns a tuple with ip and port
@@ -108,59 +114,9 @@ while True:
     newthread = Threadchild(ip, port, connectionSocket)
     newthread.run()
     threads.append(newthread)
-    print("End of While Loop")
-    print(threads)
+    #print("End of While Loop")
+    #print(threads)
 
 # All thread goes into waiting state for termination
 for newthread in threads:
     newthread.join()
-
-
-'''
-while True:
-    tcpsock.listen(5)
-    print "Waiting for incoming connections..."
-    (conn, (ip,port)) = tcpsock.accept()
-    print 'Got connection from ', (ip,port)
-    newthread = ClientThread(ip,port,conn)
-    newthread.start()
-    threads.append(newthread)
-
-for t in threads:
-    t.join()
-
-
-
-import os
-import socket 
-print(os.listdir(os.getcwd()))
-
-# REFERENCE CODE 
-eif data == "LIST":
-        list_files()
-
-def list_files():
-    print "Listing files..."
-    # Get list of files in directory
-    listing = os.listdir(os.getcwd())
-    # Send over the number of files, so the client knows what to expect (and avoid some errors)
-    conn.send(struct.pack("i", len(listing)))
-    total_directory_size = 0
-    # Send over the file names and sizes whilst totaling the directory size
-    for i in listing:
-        # File name size
-        conn.send(struct.pack("i", sys.getsizeof(i)))
-        # File name
-        conn.send(i)
-        # File content size
-        conn.send(struct.pack("i", os.path.getsize(i)))
-        total_directory_size += os.path.getsize(i)
-        # Make sure that the client and server are syncronised
-        conn.recv(BUFFER_SIZE)
-    # Sum of file sizes in directory
-    conn.send(struct.pack("i", total_directory_size))
-    #Final check
-    conn.recv(BUFFER_SIZE)
-    print "Successfully sent file listing"
-    return
-'''
