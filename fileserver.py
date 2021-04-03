@@ -1,5 +1,4 @@
 from socket import *
-from status import Status
 from threading import Thread
 import os
 import struct
@@ -7,59 +6,26 @@ import sys
 
 BUFFER_SIZE = 2048
 
-
 class Threadchild(Thread):
     def __init__(self, ip, port, sock):
         Thread.__init__(self)
         self.ip = ip
         self.port = port
         self.sock = sock
-        self.status = Status()
-        self.status.setCode("230")
-        self.status.setMessage("User logged in")
-        print(self.status.getCode() + self.status.getMessage()
-              + " from " + ip + ":" + str(port))
 
     def run(self):
         cmd = self.sock.recv(BUFFER_SIZE).decode()
-        if "LIST" in str(cmd):
-            self.status.setCode("212")
-            self.status.setMessage("Directory status.")
-            self.sock.send(self.status.getCode().encode())
-            self.listing()
 
-        # elif "UPLD" in str(cmd):
-        elif "DWLD" in str(cmd):
-            self.status.setCode("125")
-            self.status.setMessage("Data connection already open; transfer starting.")
-            self.sock.send(self.status.getCode().encode())
+        if "D" in str(cmd):
             # Removes all the leading as well as trailing spaces
-            self.download(str(cmd)[4:].strip())
-        # elif "DELF" in str(cmd):
-        elif "QUIT" in str(cmd):
-            self.sock.close()
+            self.download()
+        elif "U" in str(cmd):
+            self.upload()
 
         return
 
-    def listing(self):
-        print("Listing files...")
-        # Get list of files in directory
-        listing = os.listdir(os.getcwd())
-        print(listing)
-
-        self.sock.send(str(len(listing)).encode())
-        for item in listing:
-            # "i" int for pack 1st param
-            self.sock.send(struct.pack("i", sys.getsizeof(item)))
-            self.sock.send(item.encode())
-            self.sock.recv(1).decode()
-
-        # self.sock.recv(BUFFER_SIZE)
-        print("Successfully sent file listing")
-        return
-
-    def download(self, filename):
-        f = open(filename, 'rb')
+    def download(self):
+        f = open("database.db", 'rb')
         while True:
             l = f.read(BUFFER_SIZE)
             # While not EOF
@@ -71,6 +37,9 @@ class Threadchild(Thread):
                 f.close()
                 self.sock.close()
                 break
+
+    def upload(self):
+        pass
 
 
 # GET Ip address
@@ -84,7 +53,6 @@ serverSocket.bind((SERVER, serverPort))
 threads = []
 
 while True:
-    print(threads)
     # What is 5 here?
     serverSocket.listen(5)
     print("Waiting for incoming connections...")
@@ -94,8 +62,6 @@ while True:
     newthread = Threadchild(ip, port, connectionSocket)
     newthread.run()
     threads.append(newthread)
-    print("End of While Loop")
-    print(threads)
 
 # All thread goes into waiting state for termination
 for newthread in threads:

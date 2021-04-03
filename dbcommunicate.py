@@ -17,7 +17,7 @@ class Database:
         """
         set up connection to the db file and create table if it does not exist
         """
-        self.con = sqlite3.connect('./database.db', check_same_thread=False)  # Create connection to database file
+        self.con = sqlite3.connect('database.db', check_same_thread=False)  # Create connection to database file
         self.con.row_factory = sqlite3.Row # Change row manager
 
         self.cur = self.con.cursor()  # Cursor for data selection
