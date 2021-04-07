@@ -36,6 +36,11 @@ class Threadchild(Thread):
             self.upload(str(cmd)[4:].strip())
 
         elif "DWLD" in str(cmd):
+            if not os.path.isfile(str(cmd)[4:].strip()):
+                self.status.setCode("550")
+                self.status.setMessage("Requested action not taken. File not found.")
+                self.sock.send(self.status.getCode().encode())
+                return
             self.status.setCode("125")
             self.status.setMessage("Data connection already open; transfer starting.")
             self.sock.send(self.status.getCode().encode())
@@ -43,6 +48,11 @@ class Threadchild(Thread):
             self.download(str(cmd)[4:].strip())
 
         elif "DELF" in str(cmd):
+            if not os.path.isfile(str(cmd)[4:].strip()):
+                self.status.setCode("550")
+                self.status.setMessage("Requested action not taken. File not found.")
+                self.sock.send(self.status.getCode().encode())
+                return
             self.delete(str(cmd)[4:].strip())
 
         elif "QUIT" in str(cmd):
@@ -65,10 +75,12 @@ class Threadchild(Thread):
 
         #self.sock.recv(BUFFER_SIZE)
         print("Successfully sent file listing")
+        self.sock.close()
         return
 
 
     def upload(self, filename):
+        
         f = open(filename, 'wb')
         while True:
             l = self.sock.recv(BUFFER_SIZE)
@@ -84,15 +96,22 @@ class Threadchild(Thread):
 
 
     def download(self, filename):
-        f = open(filename, 'rb')
-        l = f.read(BUFFER_SIZE)
-        # While not EOF
-        while l:
-            self.sock.send(l)
-            #print('Sent ',repr(l))
+        if os.path.isfile(filename):
+            print("File exist")
+            f = open(filename, 'rb')
             l = f.read(BUFFER_SIZE)
-        f.close()
-        self.sock.close()
+            # While not EOF
+            while l:
+                self.sock.send(l)
+                #print('Sent ',repr(l))
+                l = f.read(BUFFER_SIZE)
+            f.close()
+            self.sock.close()
+        else:
+            print("File not found")
+            send_data = "File cannot be found"
+            self.sock.send(send_data.encode())
+            self.sock.close()
 
     def delete(self, filename):
         if os.path.isfile(filename):
@@ -101,10 +120,12 @@ class Threadchild(Thread):
             self.status.setCode("313")
             self.status.setMessage("File Deleted")
             self.sock.send(self.status.getCode().encode())
+            self.sock.close()
         else:
             print("File not found")
             send_data = "File cannot be found"
             self.sock.send(send_data.encode())
+            self.sock.close()
 
 # GET Ip address
 SERVER = gethostbyname(gethostname())
