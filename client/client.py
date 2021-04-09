@@ -11,7 +11,7 @@ try:
 
         # GET IP address
         SERVER = socket.gethostbyname(socket.gethostname())
-        serverPort = 10047
+        serverPort = 10065
 
         # Step 1: Create a TCP/IP socket
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -97,22 +97,18 @@ try:
 
         #Listing files
         elif reply == '212':
-            try:
-                # First get the number of files in the directory
-                # recv(4) is for int byte size
-                number_of_files = clientSocket.recv(bufferSize).decode()
-                #print(number_of_files)
-                print("Listing files...\n")
-                # Then enter into a loop to recieve details of each, one by one
-                for _ in range(int(number_of_files)):
-                    file_name_size = struct.unpack("i", clientSocket.recv(4))[0]
-                    file_name = clientSocket.recv(file_name_size).decode()
-                    print(file_name)
-                    clientSocket.send("1".encode())
-                clientSocket.close()
-            except:
-                print("Couldn't retrieve listing\n")
-                clientSocket.close()
+            print("---START---")
+            print("Listing Files: ")
+            while True:
+                try:
+                    data = clientSocket.recv(bufferSize)
+                    if len(data) == 0: # Connection close
+                        break
+                    print(data.decode('ascii').strip())
+                except (socket.error): # Connection closed
+                    break
+            print("---END---")
+            clientSocket.close()
 
         # Uploading file
         elif reply == "126":

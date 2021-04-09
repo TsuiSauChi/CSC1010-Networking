@@ -18,8 +18,9 @@ class Threadchild(Thread):
         self.status = Status()
         self.status.setCode("230")
         self.status.setMessage("User logged in")
-        print(self.status.getCode() + self.status.getMessage()
+        print(self.status.getCode() + " ", self.status.getMessage()
                 + " from " + ip + ":" + str(port))
+        print()
 
     def run(self):
         cmd = self.sock.recv(BUFFER_SIZE).decode()
@@ -63,15 +64,8 @@ class Threadchild(Thread):
     def listing(self):
         print("Listing files...")
         # Get list of files in directory
-        listing = os.listdir(os.getcwd())
-        print(listing)
-
-        self.sock.send(str(len(listing)).encode())
-        for item in listing:
-            # "i" int for pack 1st param
-            self.sock.send(struct.pack("i", sys.getsizeof(item)))
-            self.sock.send(item.encode())
-            self.sock.recv(1).decode()
+        listing = '\r\n'.join(os.listdir(os.getcwd())) + '\r\n'
+        self.sock.send(listing.encode('ascii'))
 
         #self.sock.recv(BUFFER_SIZE)
         print("Successfully sent file listing")
@@ -130,7 +124,7 @@ class Threadchild(Thread):
 # GET Ip address
 SERVER = gethostbyname(gethostname())
 # Define server port
-serverPort = 10047
+serverPort = 10065
 # Step 1: Creating a TCP Connection 
 serverSocket = socket(AF_INET, SOCK_STREAM)
 # Step 2: Associate socket with server 
