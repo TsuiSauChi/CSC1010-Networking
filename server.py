@@ -139,7 +139,7 @@ while True:
     connectionSocket, (ip, port) = serverSocket.accept()
     print('Got connection from', ip, port)
     newthread = Threadchild(ip, port, connectionSocket)
-    newthread.run()
+    newthread.start()
     threads.append(newthread)
     #print("End of While Loop")
     #print(threads)
